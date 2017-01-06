@@ -1,0 +1,77 @@
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../bower_components/promise-polyfill/promise-polyfill-lite.html">
+<link rel="import" href="../../bower_components/iron-ajax/iron-request.html">
+<dom-module id="w-user-location">
+<style>
+	:host {
+		display: none;
+	}
+</style>
+
+<template>
+<iron-request id="xhr"></iron-request>
+</template>
+
+<script>
+(function() {
+	"use strict"
+	var _getPromisedLocation = function() {
+		return new Promise(function(fulfill, reject){
+			if (!navigator.geolocation) {
+				reject(new Error('geolocation unavailable'));
+			} else {
+				navigator.geolocation.getCurrentPosition(fulfill, reject);
+			}
+		});
+	};
+	Polymer({
+		is: 'w-user-location',
+		hostAttributes: {
+			hidden: true
+		},
+		properties: {
+			latitude: {
+				type: Number,
+				notify: true,
+				reflectToAttribute: true,
+				readOnly: true,
+				value: 54.181389
+			},
+			longitude: {
+				type: Number,
+				notify: true,
+				reflectToAttribute: true,
+				readOnly: true,
+				value: 12.085833
+			},
+		},
+		_onLocation: function(pos) {
+			this._setLatitude(pos.latitude);
+			this._setLongitude(pos.longitude);
+			console.log('Location, location, location', pos.latitude, pos.longitude);
+		},
+		attached: function() {
+			var that = this;
+			_getPromisedLocation().then(function() {
+				return Promise.resolve({
+					latitude: pos.coords.latitude,
+					longitude: pos.coords.longitude}
+				);})
+			.catch(function(err) {
+				console.log('No location from UA', err);
+				return that.$.xhr.send({url: 'https://freegeoip.net/json/',
+					handleAs: 'json'}).then(function(xhr) {
+						return Promise.resolve(xhr.response);
+					});
+			})
+			.then(that._onLocation.bind(that))
+			.catch(function(err) {
+				console.log('No location at all, using default', err);
+			}).then(function() {
+				that.fire('resolved');
+			});
+		}
+	});
+})();
+</script>
+</dom-module>

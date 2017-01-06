@@ -1,0 +1,27 @@
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+<link rel="import" href="../w-user-location/w-user-location.html">
+<dom-module id="weather-app">
+  <template>
+    <style>
+      :host {
+        display: block;
+      }
+    </style>
+    <h2>Hello [[prop1]]</h2>
+		<w-user-location id="location"/>
+  </template>
+
+  <script>
+    Polymer({
+
+      is: 'weather-app',
+
+      properties: {
+        prop1: {
+          type: String,
+          value: 'weather-app',
+        },
+      },
+    });
+  </script>
+</dom-module>
